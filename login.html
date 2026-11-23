@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - RENVO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/auth.css" />
+  </head>
+  <body class="auth-page">
+    <header class="auth-topbar">
+      <div class="container">
+        <a href="/index.html" class="logo" aria-label="RENVO home">
+          <span class="logo-mark" aria-hidden="true">R</span>
+          <span class="logo-text">RENVO</span>
+        </a>
+        <a href="/index.html" class="auth-back">&larr; Back to home</a>
+      </div>
+    </header>
+
+    <main class="auth-main">
+      <div class="auth-card">
+        <div class="auth-card-head">
+          <h1>Welcome back</h1>
+          <p>Log in to your RENVO account.</p>
+        </div>
+
+        <div id="demoBanner"></div>
+
+        <form id="loginForm" novalidate>
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control"
+              placeholder="you@example.com"
+              autocomplete="email"
+            />
+            <span class="field-error" id="err-email"></span>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-field">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-control"
+                placeholder="Your password"
+                autocomplete="current-password"
+              />
+              <button type="button" class="toggle-password" aria-label="Show password">Show</button>
+            </div>
+            <span class="field-error" id="err-password"></span>
+          </div>
+
+          <!-- Remember me + Forgot password -->
+          <div class="form-inline-row">
+            <div class="checkbox-row">
+              <input type="checkbox" id="remember" name="remember" />
+              <label for="remember">Remember me</label>
+            </div>
+            <a href="#" class="link-muted" id="forgotPassword">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+
+        <p class="auth-foot">
+          New to RENVO?
+          <a href="/signup.html">Create an account</a>
+        </p>
+      </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+      /* Login page logic (Vanilla JS) */
+      const { showToast, getAccount, setSession, isEmail, setupPasswordToggles, generateOtp, demoBannerHTML, STORAGE_KEYS, redirectIfLoggedIn } = window.RENVO;
+
+      redirectIfLoggedIn();
+
+      document.getElementById("demoBanner").innerHTML = demoBannerHTML();
+      setupPasswordToggles();
+
+      const form = document.getElementById("loginForm");
+
+      function setError(fieldId, message) {
+        const errEl = document.getElementById("err-" + fieldId);
+        const field = document.getElementById(fieldId);
+        if (errEl) errEl.textContent = message || "";
+        if (field) field.classList.toggle("invalid", Boolean(message));
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const remember = document.getElementById("remember").checked;
+
+        let valid = true;
+
+        // Validate email
+        if (!email) {
+          setError("email", "Please enter your email address.");
+          valid = false;
+        } else if (!isEmail(email)) {
+          setError("email", "Please enter a valid email address.");
+          valid = false;
+        } else {
+          setError("email", "");
+        }
+
+        // Validate password
+        if (!password) {
+          setError("password", "Please enter your password.");
+          valid = false;
+        } else {
+          setError("password", "");
+        }
+
+        if (!valid) {
+          showToast("Please fix the highlighted fields.");
+          return;
+        }
+
+        // Check against the demo account saved in localStorage.
+        const account = getAccount();
+        if (!account || account.email.toLowerCase() !== email.toLowerCase() || account.password !== password) {
+          showToast("No matching account found. Try signing up first.");
+          setError("email", "Email or password is incorrect.");
+          return;
+        }
+
+        // For the demo, every login goes through the OTP step.
+        const otp = generateOtp();
+        localStorage.setItem(STORAGE_KEYS.pendingOtp, otp);
+        localStorage.setItem(STORAGE_KEYS.pendingFlow, "login");
+        // Remember "remember me" so we can keep the session after OTP.
+        localStorage.setItem("renvo_remember", remember ? "1" : "0");
+
+        showToast("Login details correct! Redirecting to OTP verification…");
+        setTimeout(() => {
+          window.location.href = "/otp.html";
+        }, 900);
+      });
+
+      // "Forgot password" — demo only.
+      document.getElementById("forgotPassword").addEventListener("click", (e) => {
+        e.preventDefault();
+        showToast("Password reset is not part of this demo yet.");
+      });
+    </script>
+  </body>
+</html>

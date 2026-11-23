@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Details - RENVO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/auth.css" />
+  </head>
+  <body class="detail-page">
+    <header class="dash-topbar" id="dashTopbar"></header>
+
+    <main class="detail-main">
+      <a href="/buyer-dashboard.html" class="detail-back">&larr; Back to Buyer Dashboard</a>
+
+      <!-- Product detail is injected here by JavaScript -->
+      <div class="detail-grid" id="detailContent"></div>
+    </main>
+
+    <!-- Make an Offer modal -->
+    <div class="modal-overlay" id="offerModal" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="offerModalTitle">
+        <button class="modal-close" id="offerClose" aria-label="Close">&times;</button>
+        <h3 id="offerModalTitle">Make an Offer</h3>
+        <p class="modal-sub" id="offerModalSub">Send your offer to the seller.</p>
+        <div class="demo-banner" role="note" style="background:var(--blue-50); border:1px solid #cfe0ff; border-radius:var(--radius-sm); padding:0.6rem 0.8rem; font-size:0.8rem; color:var(--navy-700); margin-bottom:var(--space-2);">
+          <strong>Demo:</strong> Your offer is saved in your browser only. No real offer is sent to the seller.
+        </div>
+        <form id="offerForm" novalidate>
+          <div class="form-group">
+            <label for="offerAmount">Offer Amount (USD)</label>
+            <input type="number" id="offerAmount" class="form-control" placeholder="e.g. 500" min="1" />
+            <span class="field-error" id="err-offerAmount"></span>
+          </div>
+          <div class="form-group">
+            <label for="offerMessage">Message to seller</label>
+            <textarea id="offerMessage" class="form-control" rows="3" placeholder="Introduce yourself and your offer…"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Submit Offer</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Contact Seller modal -->
+    <div class="modal-overlay" id="contactModal" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
+        <button class="modal-close" id="contactClose" aria-label="Close">&times;</button>
+        <h3 id="contactModalTitle">Contact Seller</h3>
+        <p class="modal-sub" id="contactModalSub">Reach out directly to the seller.</p>
+        <div id="contactInfo" style="font-size:0.92rem; color:var(--gray-700); line-height:1.7;"></div>
+        <div class="demo-banner" role="note" style="background:var(--blue-50); border:1px solid #cfe0ff; border-radius:var(--radius-sm); padding:0.6rem 0.8rem; font-size:0.8rem; color:var(--navy-700); margin-top:var(--space-2);">
+          <strong>Demo:</strong> Messaging is not connected to a real inbox yet.
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/auth.js"></script>
+    <script type="module" src="/products.js"></script>
+    <script type="module" src="/dashboard.js"></script>
+    <script type="module">
+      /* Product detail page logic (Vanilla JS) — DEMO only */
+      const { requireSession, showToast } = window.RENVO;
+      const { getListingById, addOffer, formatPrice, productImageHTML } = window.RENVO_DATA;
+
+      const session = requireSession();
+      if (session) {
+        renderDashTopbar("buyer");
+        initDetailPage();
+      }
+
+      function initDetailPage() {
+        // Read the product id from the URL (?id=p1).
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        const product = getListingById(id);
+
+        const container = document.getElementById("detailContent");
+
+        if (!product) {
+          container.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              <h3>Product not found</h3>
+              <p>This listing may have been removed or booked by another buyer.</p>
+              <a href="/buyer-dashboard.html" class="btn btn-primary" style="margin-top:1rem;">Back to Explore</a>
+            </div>`;
+          return;
+        }
+
+        // If the listing is booked or sold, show a notice but still display info.
+        const statusNotice =
+          product.status === "booked"
+            ? '<span class="status-badge booked" style="margin-bottom:0.5rem;">Booked</span>'
+            : product.status === "sold"
+            ? '<span class="status-badge sold" style="margin-bottom:0.5rem;">Sold Out</span>'
+            : "";
+
+        // Build 4 gallery "images" (icon tiles with different gradients).
+        const thumbs = [0, 1, 2, 3]
+          .map(
+            (i) =>
+              `<div class="gallery-thumb ${i === 0 ? "active" : ""}" data-idx="${i}">${productImageHTML(product.category, i)}</div>`
+          )
+          .join("");
+
+        container.innerHTML = `
+          <!-- Gallery -->
+          <div class="detail-gallery">
+            <div class="gallery-main" id="galleryMain">${productImageHTML(product.category, 0)}</div>
+            <div class="gallery-thumbs" id="galleryThumbs">${thumbs}</div>
+          </div>
+
+          <!-- Info -->
+          <div class="detail-info">
+            <span class="prod-cat">${product.category}</span>
+            <h1>${product.name}</h1>
+            <p class="detail-brand">${product.brand} · Model ${product.model}</p>
+            ${statusNotice}
+            <div class="detail-price-row">
+              <span class="detail-price">${formatPrice(product.price)}</span>
+              <span class="detail-orig">${formatPrice(product.originalPrice)}</span>
+            </div>
+            <p class="detail-desc">${product.description}</p>
+
+            <!-- Specs -->
+            <div class="detail-specs">
+              <div class="spec-item"><span class="spec-label">Original Price</span><span class="spec-value">${formatPrice(product.originalPrice)}</span></div>
+              <div class="spec-item"><span class="spec-label">Expected Price</span><span class="spec-value">${formatPrice(product.price)}</span></div>
+              <div class="spec-item"><span class="spec-label">Days Used</span><span class="spec-value">${product.daysUsed} days</span></div>
+              <div class="spec-item"><span class="spec-label">Condition</span><span class="spec-value">${product.condition}</span></div>
+              <div class="spec-item"><span class="spec-label">Accessories</span><span class="spec-value">${product.accessories}</span></div>
+              <div class="spec-item"><span class="spec-label">Location</span><span class="spec-value">${product.location}</span></div>
+            </div>
+
+            <!-- Seller info -->
+            <div class="detail-seller">
+              <h3>Seller Information</h3>
+              <div class="seller-row"><span>Name</span><span>${product.seller.name}</span></div>
+              <div class="seller-row"><span>Email</span><span>${product.seller.email}</span></div>
+              <div class="seller-row"><span>Phone</span><span>${product.seller.phone}</span></div>
+              <div class="seller-row"><span>Rating</span><span>${product.seller.rating} / 5.0</span></div>
+            </div>
+
+            <!-- Actions -->
+            <div class="detail-actions">
+              <button type="button" class="btn btn-primary" id="makeOfferBtn">Make an Offer</button>
+              <button type="button" class="btn btn-outline" id="contactSellerBtn">Contact Seller</button>
+            </div>
+          </div>
+        `;
+
+        // Gallery thumbnail switching.
+        const galleryMain = document.getElementById("galleryMain");
+        document.querySelectorAll(".gallery-thumb").forEach((thumb) => {
+          thumb.addEventListener("click", () => {
+            document.querySelectorAll(".gallery-thumb").forEach((t) => t.classList.remove("active"));
+            thumb.classList.add("active");
+            const idx = Number(thumb.dataset.idx);
+            galleryMain.innerHTML = productImageHTML(product.category, idx);
+          });
+        });
+
+        // ---- Make an Offer modal ----
+        const offerModal = document.getElementById("offerModal");
+        document.getElementById("makeOfferBtn").addEventListener("click", () => {
+          // Pre-fill the suggested price.
+          document.getElementById("offerAmount").value = product.price;
+          document.getElementById("offerModalSub").textContent = `Your offer for ${product.name} (asking ${formatPrice(product.price)})`;
+          openModal(offerModal);
+        });
+
+        document.getElementById("offerForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const amount = document.getElementById("offerAmount").value;
+          const message = document.getElementById("offerMessage").value.trim();
+          const errEl = document.getElementById("err-offerAmount");
+
+          if (!amount || Number(amount) <= 0) {
+            errEl.textContent = "Please enter a valid offer amount.";
+            document.getElementById("offerAmount").classList.add("invalid");
+            return;
+          }
+          errEl.textContent = "";
+          document.getElementById("offerAmount").classList.remove("invalid");
+
+          // Save the demo offer in localStorage.
+          addOffer({
+            productId: product.id,
+            productName: product.name,
+            buyerName: session.fullName || "Buyer",
+            buyerEmail: session.email || "buyer@renvo.example",
+            amount: Number(amount),
+            message: message,
+          });
+
+          closeModal(offerModal);
+          showToast(`Offer of ${formatPrice(amount)} submitted! (Demo — saved locally)`);
+          // Reset the form for next time.
+          document.getElementById("offerMessage").value = "";
+        });
+
+        // ---- Contact Seller modal ----
+        const contactModal = document.getElementById("contactModal");
+        document.getElementById("contactSellerBtn").addEventListener("click", () => {
+          document.getElementById("contactInfo").innerHTML = `
+            <div class="seller-row"><span style="color:var(--gray-500);">Name</span><strong>${product.seller.name}</strong></div>
+            <div class="seller-row"><span style="color:var(--gray-500);">Email</span><strong>${product.seller.email}</strong></div>
+            <div class="seller-row"><span style="color:var(--gray-500);">Phone</span><strong>${product.seller.phone}</strong></div>
+            <div class="seller-row"><span style="color:var(--gray-500);">Rating</span><strong>${product.seller.rating} / 5.0</strong></div>
+          `;
+          openModal(contactModal);
+        });
+
+        // Modal close handlers.
+        document.getElementById("offerClose").addEventListener("click", () => closeModal(offerModal));
+        document.getElementById("contactClose").addEventListener("click", () => closeModal(contactModal));
+        offerModal.addEventListener("click", (e) => { if (e.target === offerModal) closeModal(offerModal); });
+        contactModal.addEventListener("click", (e) => { if (e.target === contactModal) closeModal(contactModal); });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") { closeModal(offerModal); closeModal(contactModal); }
+        });
+      }
+
+      // Open / close modal helpers.
+      function openModal(modal) {
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+      }
+      function closeModal(modal) {
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Choose Your Role - RENVO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/auth.css" />
+  </head>
+  <body class="auth-page">
+    <header class="auth-topbar">
+      <div class="container">
+        <a href="/index.html" class="logo" aria-label="RENVO home">
+          <span class="logo-mark" aria-hidden="true">R</span>
+          <span class="logo-text">RENVO</span>
+        </a>
+        <button type="button" class="auth-back" id="logoutBtn" style="background:none; border:none; cursor:pointer; font-family:inherit;">Logout</button>
+      </div>
+    </header>
+
+    <main class="auth-main">
+      <div class="auth-card wide">
+        <div class="auth-card-head">
+          <h1>Welcome, <span id="userName">there</span>!</h1>
+          <p>Both roles belong to the same account. You can switch anytime.</p>
+        </div>
+
+        <div id="demoBanner"></div>
+
+        <div class="role-grid">
+          <!-- BUYER card -->
+          <button type="button" class="role-card" id="buyerCard">
+            <span class="role-icon buyer" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6" />
+                <path d="m21 21-4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </span>
+            <h3>Buyer</h3>
+            <p class="role-sub">Explore Gadgets</p>
+            <ul class="role-list">
+              <li>Find affordable electronics</li>
+              <li>Browse available products</li>
+              <li>Message sellers directly</li>
+            </ul>
+            <span class="role-cta">Continue as Buyer &rarr;</span>
+          </button>
+
+          <!-- SELLER card -->
+          <button type="button" class="role-card" id="sellerCard">
+            <span class="role-icon seller" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 9l1.5-5h15L21 9M3 9h18v11H3V9z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                <path d="M9 13h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </span>
+            <h3>Seller</h3>
+            <p class="role-sub">Sell Your Gadgets</p>
+            <ul class="role-list">
+              <li>List your used electronics</li>
+              <li>Earn money from unused devices</li>
+              <li>Reach thousands of buyers</li>
+            </ul>
+            <span class="role-cta">Continue as Seller &rarr;</span>
+          </button>
+        </div>
+
+        <p class="role-note">
+          You can use both roles with the same account. Switch anytime from your dashboard.
+        </p>
+      </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+      /* Role selection page logic (Vanilla JS) */
+      const { showToast, getSession, setSession, requireSession, clearSession, demoBannerHTML } = window.RENVO;
+
+      document.getElementById("demoBanner").innerHTML = demoBannerHTML();
+
+      // Make sure the user is logged in; otherwise go to login.
+      const session = requireSession();
+      if (session) {
+        // Greet the user by name.
+        const first = session.fullName ? session.fullName.split(" ")[0] : "there";
+        document.getElementById("userName").textContent = first;
+      }
+
+      // Save the chosen role and go to the matching dashboard.
+      function chooseRole(role) {
+        const s = getSession();
+        if (!s) {
+          window.location.href = "/login.html";
+          return;
+        }
+        s.role = role;
+        setSession(s);
+        showToast(`Continuing as ${role.charAt(0).toUpperCase() + role.slice(1)}…`);
+        setTimeout(() => {
+          window.location.href = role === "buyer" ? "/buyer-dashboard.html" : "/seller-dashboard.html";
+        }, 700);
+      }
+
+      document.getElementById("buyerCard").addEventListener("click", () => chooseRole("buyer"));
+      document.getElementById("sellerCard").addEventListener("click", () => chooseRole("seller"));
+
+      // Logout clears the demo session.
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        clearSession();
+        showToast("Logged out.");
+        setTimeout(() => (window.location.href = "/index.html"), 600);
+      });
+    </script>
+  </body>
+</html>

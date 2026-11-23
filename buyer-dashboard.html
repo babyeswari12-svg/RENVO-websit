@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buyer Dashboard - RENVO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/auth.css" />
+  </head>
+  <body class="dash-page">
+    <header class="dash-topbar" id="dashTopbar"></header>
+
+    <main class="dash-main">
+      <!-- Welcome banner -->
+      <section class="dash-welcome">
+        <h1>Welcome to RENVO</h1>
+        <p>Hi <span id="userName">there</span> — find affordable, pre-owned electronics from sellers across the marketplace.</p>
+      </section>
+
+      <!-- Demo stats -->
+      <section class="dash-stats">
+        <div class="dash-stat">
+          <div class="stat-num" id="statListings">0</div>
+          <div class="stat-label">Available Listings</div>
+        </div>
+        <div class="dash-stat">
+          <div class="stat-num">10</div>
+          <div class="stat-label">Categories</div>
+        </div>
+        <div class="dash-stat">
+          <div class="stat-num" id="statOffers">0</div>
+          <div class="stat-label">My Offers</div>
+        </div>
+        <div class="dash-stat">
+          <div class="stat-num" id="statSaved">0</div>
+          <div class="stat-label">Saved Items</div>
+        </div>
+      </section>
+
+      <!-- Explore section (search + filters + product grid) -->
+      <section id="explore" class="market-layout">
+        <!-- Sidebar filters -->
+        <aside class="market-sidebar" id="marketSidebar">
+          <p class="sidebar-title">Filters</p>
+
+          <!-- Category filter -->
+          <div class="sidebar-group">
+            <label>Category</label>
+            <button type="button" class="cat-chip active" data-cat="all">All Categories</button>
+            <div id="catList"></div>
+          </div>
+
+          <!-- Price range -->
+          <div class="sidebar-group">
+            <label>Price Range</label>
+            <div class="price-row">
+              <input type="number" id="minPrice" class="sidebar-input" placeholder="Min $" min="0" />
+              <span>–</span>
+              <input type="number" id="maxPrice" class="sidebar-input" placeholder="Max $" min="0" />
+            </div>
+          </div>
+
+          <!-- Condition filter -->
+          <div class="sidebar-group">
+            <label>Condition</label>
+            <select id="condFilter" class="sidebar-select">
+              <option value="all">All Conditions</option>
+              <option value="Like New">Like New</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Good">Good</option>
+            </select>
+          </div>
+
+          <!-- Location filter -->
+          <div class="sidebar-group">
+            <label>Location</label>
+            <select id="locFilter" class="sidebar-select">
+              <option value="all">All Locations</option>
+            </select>
+          </div>
+
+          <button type="button" class="sidebar-reset" id="resetFilters">Reset Filters</button>
+        </aside>
+
+        <!-- Main column: search + product grid -->
+        <div class="market-main">
+          <div class="market-toolbar">
+            <div class="search-box">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8" />
+                <path d="m21 21-4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+              <input
+                type="search"
+                id="searchInput"
+                placeholder="Search by product name, brand or model…"
+                aria-label="Search products"
+              />
+            </div>
+            <button type="button" class="mobile-filter-toggle" id="mobileFilterToggle">
+              <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true">
+                <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+              Filters
+            </button>
+            <span class="market-count" id="resultCount">0 results</span>
+          </div>
+
+          <div class="product-grid" id="productGrid"></div>
+        </div>
+      </section>
+
+      <!-- My Offers section -->
+      <section id="offers" class="section-card" style="margin-top: var(--space-3);">
+        <h2>My Offers</h2>
+        <p class="section-sub">Offers you have sent to sellers (demo data saved in your browser).</p>
+        <div class="offer-list" id="myOffersList"></div>
+      </section>
+
+      <p class="placeholder-note" style="margin-top: var(--space-3);">
+        Demo mode: Browse, search, filter, and make offers. No checkout, cart, or online payment is included.
+      </p>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/auth.js"></script>
+    <script type="module" src="/products.js"></script>
+    <script type="module" src="/dashboard.js"></script>
+    <script type="module">
+      /* Buyer dashboard logic (Vanilla JS) — DEMO only */
+      const { requireSession, showToast } = window.RENVO;
+      const {
+        CATEGORIES,
+        getListings,
+        getOffers,
+        formatPrice,
+        productImageHTML,
+      } = window.RENVO_DATA;
+
+      const session = requireSession();
+      if (session) {
+        document.getElementById("userName").textContent =
+          session.fullName ? session.fullName.split(" ")[0] : "there";
+        renderDashTopbar("buyer");
+        initBuyerDashboard();
+      }
+
+      function initBuyerDashboard() {
+        // Current filter state.
+        const filters = {
+          search: "",
+          category: "all",
+          minPrice: "",
+          maxPrice: "",
+          condition: "all",
+          location: "all",
+        };
+
+        // Build category chips.
+        const catList = document.getElementById("catList");
+        CATEGORIES.forEach((cat) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "cat-chip";
+          btn.textContent = cat;
+          btn.dataset.cat = cat;
+          btn.addEventListener("click", () => selectCategory(cat));
+          catList.appendChild(btn);
+        });
+
+        // Build location dropdown from listings.
+        const locations = [...new Set(getListings().map((p) => p.location))].sort();
+        const locFilter = document.getElementById("locFilter");
+        locations.forEach((loc) => {
+          const opt = document.createElement("option");
+          opt.value = loc;
+          opt.textContent = loc;
+          locFilter.appendChild(opt);
+        });
+
+        // Search input.
+        const searchInput = document.getElementById("searchInput");
+        searchInput.addEventListener("input", () => {
+          filters.search = searchInput.value.trim().toLowerCase();
+          renderProducts();
+        });
+
+        // Price + condition + location filters.
+        document.getElementById("minPrice").addEventListener("input", (e) => {
+          filters.minPrice = e.target.value;
+          renderProducts();
+        });
+        document.getElementById("maxPrice").addEventListener("input", (e) => {
+          filters.maxPrice = e.target.value;
+          renderProducts();
+        });
+        document.getElementById("condFilter").addEventListener("change", (e) => {
+          filters.condition = e.target.value;
+          renderProducts();
+        });
+        document.getElementById("locFilter").addEventListener("change", (e) => {
+          filters.location = e.target.value;
+          renderProducts();
+        });
+
+        // Reset filters.
+        document.getElementById("resetFilters").addEventListener("click", () => {
+          filters.search = "";
+          filters.category = "all";
+          filters.minPrice = "";
+          filters.maxPrice = "";
+          filters.condition = "all";
+          filters.location = "all";
+          searchInput.value = "";
+          document.getElementById("minPrice").value = "";
+          document.getElementById("maxPrice").value = "";
+          document.getElementById("condFilter").value = "all";
+          locFilter.value = "all";
+          selectCategory("all");
+          renderProducts();
+          showToast("Filters reset.");
+        });
+
+        // Mobile filter toggle.
+        document.getElementById("mobileFilterToggle").addEventListener("click", () => {
+          document.getElementById("marketSidebar").classList.toggle("open");
+        });
+
+        function selectCategory(cat) {
+          filters.category = cat;
+          document.querySelectorAll(".cat-chip").forEach((c) => {
+            c.classList.toggle("active", c.dataset.cat === cat);
+          });
+          renderProducts();
+        }
+
+        // Render the product grid based on filters.
+        function renderProducts() {
+          const all = getListings();
+          // Only show "available" listings to buyers (booked/sold are hidden).
+          let list = all.filter((p) => p.status === "available");
+
+          // Search: match name, brand, or model.
+          if (filters.search) {
+            list = list.filter((p) =>
+              (p.name + " " + p.brand + " " + p.model).toLowerCase().includes(filters.search)
+            );
+          }
+          // Category.
+          if (filters.category !== "all") {
+            list = list.filter((p) => p.category === filters.category);
+          }
+          // Price range.
+          if (filters.minPrice !== "") {
+            list = list.filter((p) => p.price >= Number(filters.minPrice));
+          }
+          if (filters.maxPrice !== "") {
+            list = list.filter((p) => p.price <= Number(filters.maxPrice));
+          }
+          // Condition.
+          if (filters.condition !== "all") {
+            list = list.filter((p) => p.condition === filters.condition);
+          }
+          // Location.
+          if (filters.location !== "all") {
+            list = list.filter((p) => p.location === filters.location);
+          }
+
+          const grid = document.getElementById("productGrid");
+          document.getElementById("resultCount").textContent = `${list.length} result${list.length === 1 ? "" : "s"}`;
+
+          if (list.length === 0) {
+            grid.innerHTML = `
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/><path d="m21 21-4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <h3>No products found</h3>
+                <p>Try adjusting your search or filters.</p>
+              </div>`;
+            return;
+          }
+
+          grid.innerHTML = "";
+          list.forEach((p) => {
+            const card = document.createElement("article");
+            card.className = "product-card";
+            card.innerHTML = `
+              <div class="prod-img">
+                <span class="prod-badge">${p.condition}</span>
+                ${productImageHTML(p.category, 0)}
+              </div>
+              <div class="prod-body">
+                <span class="prod-cat">${p.category}</span>
+                <h3 class="prod-name">${p.name}</h3>
+                <span class="prod-meta">${p.brand} · ${p.model}</span>
+                <span class="prod-meta">${p.location}</span>
+                <div class="prod-meta-row">
+                  <span class="prod-price">${formatPrice(p.price)}</span>
+                </div>
+                <a href="/product-detail.html?id=${p.id}" class="btn btn-primary prod-cta">View Details</a>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+        }
+
+        // Render the buyer's own offers (My Offers section).
+        function renderMyOffers() {
+          const offers = getOffers().filter((o) => o.buyerEmail === session.email);
+          const container = document.getElementById("myOffersList");
+          document.getElementById("statOffers").textContent = offers.length;
+
+          if (offers.length === 0) {
+            container.innerHTML = `<p class="empty-state" style="padding: var(--space-3);">You haven't made any offers yet. Browse products and tap "Make an Offer".</p>`;
+            return;
+          }
+          container.innerHTML = "";
+          offers.slice().reverse().forEach((o) => {
+            const card = document.createElement("div");
+            card.className = "offer-card";
+            const statusPill =
+              o.status === "accepted"
+                ? '<span class="offer-status accepted">Accepted</span>'
+                : o.status === "rejected"
+                ? '<span class="offer-status rejected">Rejected</span>'
+                : '<span class="offer-status" style="background:var(--blue-50); color:var(--blue-600);">Pending</span>';
+            card.innerHTML = `
+              <div class="offer-info">
+                <div class="offer-product">${o.productName}</div>
+                <div class="offer-buyer">Your offer: <span class="offer-amount">${formatPrice(o.amount)}</span></div>
+                <div class="offer-msg">"${o.message || "No message"}"</div>
+              </div>
+              ${statusPill}
+            `;
+            container.appendChild(card);
+          });
+        }
+
+        // Initial render.
+        renderProducts();
+        renderMyOffers();
+        // Update stats.
+        document.getElementById("statListings").textContent = getListings().filter((p) => p.status === "available").length;
+        document.getElementById("statSaved").textContent = 0;
+
+        // Re-render My Offers when returning from the detail page (storage event).
+        window.addEventListener("storage", (e) => {
+          if (e.key === window.RENVO_DATA.DATA_KEYS.offers) renderMyOffers();
+        });
+      }
+    </script>
+  </body>
+</html>

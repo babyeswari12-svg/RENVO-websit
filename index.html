@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RENVO - Pre-Owned Electronics Marketplace</title>
+    <meta
+      name="description"
+      content="RENVO is a pre-owned electronics marketplace where users can sell and discover used electronic gadgets."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
+  </head>
+  <body>
+    <!-- ===== NAVIGATION BAR ===== -->
+    <header class="navbar" id="navbar">
+      <div class="container nav-inner">
+        <a href="#home" class="logo" aria-label="RENVO home">
+          <span class="logo-mark" aria-hidden="true">R</span>
+          <span class="logo-text">RENVO</span>
+        </a>
+
+        <!-- Desktop navigation links -->
+        <nav class="nav-links" id="navLinks">
+          <a href="/index.html#home" class="nav-link">Home</a>
+          <a href="/index.html#explore" class="nav-link">Explore Gadgets</a>
+          <a href="/index.html#how-it-works" class="nav-link">How It Works</a>
+          <a href="/index.html#about" class="nav-link">About Us</a>
+          <a href="/login.html" class="nav-link nav-link-btn ghost">Login</a>
+          <a href="/signup.html" class="nav-link nav-link-btn primary">Sign Up</a>
+        </nav>
+
+        <!-- Mobile menu toggle button -->
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- ===== HERO SECTION ===== -->
+      <section class="hero" id="home">
+        <div class="container hero-inner">
+          <div class="hero-text">
+            <span class="eyebrow">Sustainable Electronics Marketplace</span>
+            <h1>Give Your Gadgets a Second Life</h1>
+            <p class="hero-subtitle">
+              Buy smarter. Sell easier. Choose sustainable technology.
+            </p>
+            <div class="hero-actions">
+              <a href="/index.html#explore" class="btn btn-primary">Explore Gadgets</a>
+              <a href="/signup.html" class="btn btn-outline">Start Selling</a>
+            </div>
+            <div class="hero-stats">
+              <div class="stat">
+                <span class="stat-num">12K+</span>
+                <span class="stat-label">Listings</span>
+              </div>
+              <div class="stat">
+                <span class="stat-num">8K+</span>
+                <span class="stat-label">Happy Users</span>
+              </div>
+              <div class="stat">
+                <span class="stat-num">40T</span>
+                <span class="stat-label">E-Waste Saved</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Decorative hero illustration built with CSS + SVG -->
+          <div class="hero-visual" aria-hidden="true">
+            <div class="visual-card visual-card-1">
+              <svg viewBox="0 0 24 24" fill="none" class="visual-icon">
+                <path
+                  d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                />
+                <path d="M11 18h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+              <div class="visual-meta">
+                <strong>iPhone 13 Pro</strong>
+                <span>$549</span>
+              </div>
+            </div>
+            <div class="visual-card visual-card-2">
+              <svg viewBox="0 0 24 24" fill="none" class="visual-icon">
+                <rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.6" />
+                <path d="M2 20h20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+              <div class="visual-meta">
+                <strong>MacBook Air</strong>
+                <span>$899</span>
+              </div>
+            </div>
+            <div class="visual-glow"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CATEGORIES SECTION ===== -->
+      <section class="section categories" id="explore">
+        <div class="container">
+          <div class="section-head">
+            <span class="section-eyebrow">Browse by category</span>
+            <h2>Explore Popular Categories</h2>
+            <p class="section-desc">
+              Find the exact gadget you need from our curated pre-owned collections.
+            </p>
+          </div>
+
+          <!-- Category cards are generated by script.js and injected here -->
+          <div class="category-grid" id="categoryGrid"></div>
+        </div>
+      </section>
+
+      <!-- ===== FEATURED PRODUCTS ===== -->
+      <section class="section featured">
+        <div class="container">
+          <div class="section-head">
+            <span class="section-eyebrow">Fresh on the market</span>
+            <h2>Featured Listings</h2>
+            <p class="section-desc">Real gadgets, real prices, listed by sellers like you.</p>
+          </div>
+          <div class="product-grid" id="productGrid"></div>
+        </div>
+      </section>
+
+      <!-- ===== HOW RENVO WORKS ===== -->
+      <section class="section how" id="how-it-works">
+        <div class="container">
+          <div class="section-head">
+            <span class="section-eyebrow">Simple steps</span>
+            <h2>How RENVO Works</h2>
+            <p class="section-desc">From sign up to deal done in four easy steps.</p>
+          </div>
+
+          <div class="steps-grid">
+            <div class="step-card">
+              <div class="step-number">1</div>
+              <div class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6" />
+                  <path d="M4 21c0-4 4-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.6" />
+                </svg>
+              </div>
+              <h3>Create Account</h3>
+              <p>Sign up free in under a minute and join the RENVO community.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-number">2</div>
+              <div class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M8 3 3 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M16 11l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M3 8h13a5 5 0 0 1 5 5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+              </div>
+              <h3>Choose Buyer or Seller</h3>
+              <p>Pick your role. Browse to buy, or list your own gadget to sell.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-number">3</div>
+              <div class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6" />
+                  <path d="m21 21-4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+              </div>
+              <h3>Discover or List Products</h3>
+              <p>Search thousands of listings or post your device with photos in seconds.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-number">4</div>
+              <div class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-7.6-4.7L3 21l1.9-1.9A8.38 8.38 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+              <h3>Connect and Complete</h3>
+              <p>Message the other party, agree on a deal, and complete your transaction.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== WHY CHOOSE RENVO ===== -->
+      <section class="section why">
+        <div class="container">
+          <div class="section-head">
+            <span class="section-eyebrow">The RENVO difference</span>
+            <h2>Why Choose RENVO</h2>
+            <p class="section-desc">A marketplace built for trust, value, and a greener planet.</p>
+          </div>
+
+          <div class="why-grid">
+            <div class="why-card">
+              <div class="why-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                  <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <h3>Easy Selling</h3>
+              <p>List your gadget in minutes with a guided flow and helpful tips for great listings.</p>
+            </div>
+
+            <div class="why-card">
+              <div class="why-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <h3>Affordable Gadgets</h3>
+              <p>Save up to 60% versus retail on certified pre-owned devices in great condition.</p>
+            </div>
+
+            <div class="why-card">
+              <div class="why-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-7.6-4.7L3 21l1.9-1.9A8.38 8.38 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M8 12h.01M12 12h.01M16 12h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <h3>Direct Communication</h3>
+              <p>Chat directly with buyers and sellers. No middlemen, no hidden fees, no surprises.</p>
+            </div>
+
+            <div class="why-card">
+              <div class="why-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3c-3 4-6 6-6 10a6 6 0 0 0 12 0c0-4-3-6-6-10z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                  <path d="M12 21v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+              </div>
+              <h3>Sustainable Electronics</h3>
+              <p>Every resale keeps a device in use longer and e-waste out of landfills.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ABOUT US ===== -->
+      <section class="section about" id="about">
+        <div class="container about-inner">
+          <div class="about-text">
+            <span class="section-eyebrow">Our mission</span>
+            <h2>Building a Circular Future for Electronics</h2>
+            <p>
+              RENVO was founded on a simple idea: the gadgets we outgrow still have real value.
+              We connect people who want to sell with people who want to save, creating a
+              marketplace that is good for wallets and good for the planet.
+            </p>
+            <p>
+              By making it easy to buy and sell pre-owned devices, we extend the life of
+              electronics, reduce e-waste, and give more people access to the technology
+              they love.
+            </p>
+            <a href="/signup.html" class="btn btn-primary">Join RENVO</a>
+          </div>
+          <div class="about-visual" aria-hidden="true">
+            <div class="about-blob"></div>
+            <div class="about-badge">
+              <span class="badge-num">100%</span>
+              <span class="badge-label">Verified Listings</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <a href="#home" class="logo logo-footer">
+            <span class="logo-mark" aria-hidden="true">R</span>
+            <span class="logo-text">RENVO</span>
+          </a>
+          <p class="footer-tagline">
+            Give your gadgets a second life. Buy smarter, sell easier, choose sustainable technology.
+          </p>
+        </div>
+
+        <nav class="footer-cols" aria-label="Footer">
+          <div class="footer-col">
+            <h4>RENVO</h4>
+            <a href="#about">About RENVO</a>
+          </div>
+          <div class="footer-col">
+            <h4>Support</h4>
+            <a href="#contact">Contact</a>
+          </div>
+          <div class="footer-col">
+            <h4>Legal</h4>
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms &amp; Conditions</a>
+          </div>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <div class="container">
+          <p>&copy; <span id="year"></span> RENVO. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Toast notification container (used by script.js) -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- Simple modal used for Login / Sign Up demo buttons -->
+    <div class="modal-overlay" id="modal" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+        <h3 id="modalTitle">Welcome to RENVO</h3>
+        <p id="modalDesc">
+          Authentication is not part of this demo yet, but this is where Login and Sign Up would go.
+        </p>
+        <button class="btn btn-primary" id="modalOk">Got it</button>
+      </div>
+    </div>
+
+    <script type="module" src="/script.js"></script>
+  </body>
+</html>

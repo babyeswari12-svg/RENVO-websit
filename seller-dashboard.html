@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seller Dashboard - RENVO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/auth.css" />
+  </head>
+  <body class="dash-page">
+    <header class="dash-topbar" id="dashTopbar"></header>
+
+    <main class="dash-main">
+      <!-- Welcome banner -->
+      <section class="dash-welcome" id="dashboard">
+        <h1>Welcome to your Seller Dashboard</h1>
+        <p>Hi <span id="userName">there</span> — turn your unused electronics into cash.</p>
+      </section>
+
+      <!-- Demo stats -->
+      <section class="dash-stats">
+        <div class="dash-stat">
+          <div class="stat-num" id="statListings">0</div>
+          <div class="stat-label">Active Listings</div>
+        </div>
+        <div class="dash-stat">
+          <div class="stat-num" id="statBooked">0</div>
+          <div class="stat-label">Booked</div>
+        </div>
+        <div class="dash-stat">
+          <div class="stat-num" id="statOffers">0</div>
+          <div class="stat-label">Offers Received</div>
+        </div>
+        <div class="dash-stat">
+          <div class="stat-num" id="statSold">0</div>
+          <div class="stat-label">Sold Out</div>
+        </div>
+      </section>
+
+      <!-- Seller benefits -->
+      <section class="section-card">
+        <h2>Why sell on RENVO</h2>
+        <p class="section-sub">Everything you need to sell your gadgets with confidence.</p>
+        <div class="benefit-grid">
+          <div class="benefit-item">
+            <span class="benefit-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l1.5-5h15L21 9M3 9h18v11H3V9z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            </span>
+            <h4>Sell unused electronics</h4>
+            <p>Give your old gadgets a second life.</p>
+          </div>
+          <div class="benefit-item">
+            <span class="benefit-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+            <h4>Reach interested buyers</h4>
+            <p>Thousands of buyers browse daily.</p>
+          </div>
+          <div class="benefit-item">
+            <span class="benefit-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h4>Set your expected price</h4>
+            <p>You control the asking price.</p>
+          </div>
+          <div class="benefit-item">
+            <span class="benefit-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-7.6-4.7L3 21l1.9-1.9A8.38 8.38 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h4>Connect directly with buyers</h4>
+            <p>Chat and negotiate with no middlemen.</p>
+          </div>
+        </div>
+        <div style="margin-top: var(--space-2); display:flex; gap: var(--space-1); flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" id="listBtn">Selling Your Product</button>
+          <button type="button" class="btn btn-outline" id="resetDemoBtn">Reset Demo Data</button>
+        </div>
+      </section>
+
+      <!-- My Listings -->
+      <section id="listings" class="section-card">
+        <h2>My Listings</h2>
+        <p class="section-sub">Sample listings showing available, booked, and sold out items.</p>
+        <div class="seller-grid" id="sellerListings"></div>
+      </section>
+
+      <!-- Offers Received -->
+      <section id="offers" class="section-card">
+        <h2>Offers Received</h2>
+        <p class="section-sub">Review and accept or reject offers from buyers.</p>
+        <div class="offer-list" id="offersList"></div>
+      </section>
+
+      <p class="placeholder-note" style="margin-top: var(--space-3);">
+        Demo mode: Accepting an offer marks the listing "Booked" and hides it from buyers. No real payments or product uploads yet.
+      </p>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/auth.js"></script>
+    <script type="module" src="/products.js"></script>
+    <script type="module" src="/dashboard.js"></script>
+    <script type="module">
+      /* Seller dashboard logic (Vanilla JS) — DEMO only */
+      const { requireSession, showToast } = window.RENVO;
+      const {
+        getListings,
+        setListingStatus,
+        getOffers,
+        saveOffers,
+        seedSampleOffersIfNeeded,
+        resetListings,
+        formatPrice,
+        productImageHTML,
+        DATA_KEYS,
+      } = window.RENVO_DATA;
+
+      const session = requireSession();
+      if (session) {
+        document.getElementById("userName").textContent =
+          session.fullName ? session.fullName.split(" ")[0] : "there";
+        renderDashTopbar("seller");
+        // Seed a couple of sample offers the first time.
+        seedSampleOffersIfNeeded();
+        initSellerDashboard();
+      }
+
+      function initSellerDashboard() {
+        // "Selling Your Product" is a placeholder — upload not built yet.
+        document.getElementById("listBtn").addEventListener("click", () => {
+          showToast("Product upload will be implemented in the next development stage.");
+        });
+
+        // Reset all demo data (listings + offers) back to the sample state.
+        document.getElementById("resetDemoBtn").addEventListener("click", () => {
+          resetListings();
+          localStorage.removeItem(DATA_KEYS.offers);
+          seedSampleOffersIfNeeded();
+          renderListings();
+          renderOffers();
+          updateStats();
+          showToast("Demo data has been reset.");
+        });
+
+        // Render the seller's listings.
+        function renderListings() {
+          const all = getListings();
+          const grid = document.getElementById("sellerListings");
+          grid.innerHTML = "";
+          // Show the first 6 sample listings as "my listings".
+          all.slice(0, 6).forEach((p) => {
+            const card = document.createElement("article");
+            card.className = "listing-card";
+            const badge =
+              p.status === "available"
+                ? '<span class="status-badge available">Available</span>'
+                : p.status === "booked"
+                ? '<span class="status-badge booked">Booked</span>'
+                : '<span class="status-badge sold">Sold Out</span>';
+
+            card.innerHTML = `
+              <div class="prod-img">${productImageHTML(p.category, 0)}</div>
+              <div class="listing-body">
+                <span class="prod-cat">${p.category}</span>
+                <h3 class="prod-name">${p.name}</h3>
+                <span class="prod-meta">${p.brand} · ${p.model}</span>
+                <div class="prod-meta-row">
+                  <span class="prod-price">${formatPrice(p.price)}</span>
+                  ${badge}
+                </div>
+                <div class="listing-actions">
+                  <button type="button" class="btn btn-outline" data-action="sold" data-id="${p.id}" ${p.status === "sold" ? "disabled" : ""}>Mark Sold</button>
+                </div>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+
+          // Wire "Mark Sold" buttons.
+          grid.querySelectorAll('[data-action="sold"]').forEach((btn) => {
+            btn.addEventListener("click", () => {
+              setListingStatus(btn.dataset.id, "sold");
+              renderListings();
+              renderOffers();
+              updateStats();
+              showToast("Listing marked as Sold Out.");
+            });
+          });
+        }
+
+        // Render offers received.
+        function renderOffers() {
+          const offers = getOffers();
+          const list = document.getElementById("offersList");
+          if (offers.length === 0) {
+            list.innerHTML = `<p class="empty-state" style="padding: var(--space-3);">No offers received yet.</p>`;
+            return;
+          }
+          list.innerHTML = "";
+          offers.slice().reverse().forEach((o) => {
+            const card = document.createElement("div");
+            card.className = "offer-card";
+
+            const actions =
+              o.status === "pending"
+                ? `
+                  <div class="offer-actions">
+                    <button type="button" class="btn btn-primary" data-action="accept" data-id="${o.id}">Accept</button>
+                    <button type="button" class="btn btn-outline" data-action="reject" data-id="${o.id}">Reject</button>
+                  </div>`
+                : `<span class="offer-status ${o.status}">${o.status === "accepted" ? "Accepted" : "Rejected"}</span>`;
+
+            card.innerHTML = `
+              <div class="offer-info">
+                <div class="offer-product">${o.productName}</div>
+                <div class="offer-buyer">From <strong>${o.buyerName}</strong> — <span class="offer-amount">${formatPrice(o.amount)}</span></div>
+                <div class="offer-msg">"${o.message || "No message"}"</div>
+              </div>
+              ${actions}
+            `;
+            list.appendChild(card);
+          });
+
+          // Wire accept / reject buttons.
+          list.querySelectorAll('[data-action="accept"]').forEach((btn) => {
+            btn.addEventListener("click", () => handleOffer(btn.dataset.id, "accepted"));
+          });
+          list.querySelectorAll('[data-action="reject"]').forEach((btn) => {
+            btn.addEventListener("click", () => handleOffer(btn.dataset.id, "rejected"));
+          });
+        }
+
+        // Handle accept / reject of an offer.
+        function handleOffer(offerId, status) {
+          const offers = getOffers();
+          const offer = offers.find((o) => o.id === offerId);
+          if (!offer) return;
+
+          offer.status = status;
+          saveOffers(offers);
+
+          if (status === "accepted") {
+            // Mark the linked listing as "booked" so it hides from buyers.
+            setListingStatus(offer.productId, "booked");
+            showToast(`Offer accepted — listing marked as Booked.`);
+          } else {
+            // On reject, keep the listing available.
+            showToast("Offer rejected. Listing stays available.");
+          }
+          renderListings();
+          renderOffers();
+          updateStats();
+        }
+
+        // Update the top stats.
+        function updateStats() {
+          const all = getListings();
+          document.getElementById("statListings").textContent = all.filter((p) => p.status === "available").length;
+          document.getElementById("statBooked").textContent = all.filter((p) => p.status === "booked").length;
+          document.getElementById("statSold").textContent = all.filter((p) => p.status === "sold").length;
+          document.getElementById("statOffers").textContent = getOffers().filter((o) => o.status === "pending").length;
+        }
+
+        renderListings();
+        renderOffers();
+        updateStats();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up - RENVO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/auth.css" />
+  </head>
+  <body class="auth-page">
+    <!-- Compact top bar with logo + back to home -->
+    <header class="auth-topbar">
+      <div class="container">
+        <a href="/index.html" class="logo" aria-label="RENVO home">
+          <span class="logo-mark" aria-hidden="true">R</span>
+          <span class="logo-text">RENVO</span>
+        </a>
+        <a href="/index.html" class="auth-back">&larr; Back to home</a>
+      </div>
+    </header>
+
+    <main class="auth-main">
+      <div class="auth-card">
+        <div class="auth-card-head">
+          <h1>Create your RENVO account</h1>
+          <p>Join the marketplace for pre-owned electronics.</p>
+        </div>
+
+        <!-- Demo banner is injected by auth.js -->
+        <div id="demoBanner"></div>
+
+        <!-- Registration form -->
+        <form id="signupForm" novalidate>
+          <!-- Full Name -->
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              class="form-control"
+              placeholder="e.g. Alex Morgan"
+              autocomplete="name"
+            />
+            <span class="field-error" id="err-fullName"></span>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control"
+              placeholder="you@example.com"
+              autocomplete="email"
+            />
+            <span class="field-error" id="err-email"></span>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="form-control"
+              placeholder="+1 555 123 4567"
+              autocomplete="tel"
+            />
+            <span class="field-error" id="err-phone"></span>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-field">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-control"
+                placeholder="Create a password"
+                autocomplete="new-password"
+              />
+              <button type="button" class="toggle-password" aria-label="Show password">Show</button>
+            </div>
+            <span class="field-error" id="err-password"></span>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <div class="password-field">
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                class="form-control"
+                placeholder="Re-enter your password"
+                autocomplete="new-password"
+              />
+              <button type="button" class="toggle-password" aria-label="Show password">Show</button>
+            </div>
+            <span class="field-error" id="err-confirmPassword"></span>
+          </div>
+
+          <!-- Terms checkbox -->
+          <div class="checkbox-row">
+            <input type="checkbox" id="terms" name="terms" />
+            <label for="terms">
+              I agree to the
+              <a href="/index.html#terms">Terms &amp; Conditions</a>
+              and
+              <a href="/index.html#privacy">Privacy Policy</a>.
+            </label>
+          </div>
+          <span class="field-error" id="err-terms"></span>
+
+          <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        </form>
+
+        <p class="auth-foot">
+          Already have an account?
+          <a href="/login.html">Login</a>
+        </p>
+      </div>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/auth.js"></script>
+    <script type="module">
+      /* Signup page logic (Vanilla JS) */
+      const { showToast, setAccount, isEmail, isPhone, setupPasswordToggles, generateOtp, demoBannerHTML, STORAGE_KEYS, redirectIfLoggedIn } = window.RENVO;
+
+      // If already logged in, go straight to role selection.
+      redirectIfLoggedIn();
+
+      // Insert the demo banner.
+      document.getElementById("demoBanner").innerHTML = demoBannerHTML();
+
+      // Wire show/hide password buttons.
+      setupPasswordToggles();
+
+      const form = document.getElementById("signupForm");
+
+      // Helper: show an error under a field and mark it invalid.
+      function setError(fieldId, message) {
+        const errEl = document.getElementById("err-" + fieldId);
+        const field = document.getElementById(fieldId);
+        if (errEl) errEl.textContent = message || "";
+        if (field) field.classList.toggle("invalid", Boolean(message));
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault(); // stop the page from reloading
+
+        // Read all field values
+        const fullName = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        const terms = document.getElementById("terms").checked;
+
+        let valid = true;
+
+        // --- Required fields ---
+        if (!fullName) {
+          setError("fullName", "Please enter your full name.");
+          valid = false;
+        } else {
+          setError("fullName", "");
+        }
+
+        // --- Email format ---
+        if (!email) {
+          setError("email", "Please enter your email address.");
+          valid = false;
+        } else if (!isEmail(email)) {
+          setError("email", "Please enter a valid email address.");
+          valid = false;
+        } else {
+          setError("email", "");
+        }
+
+        // --- Phone number ---
+        if (!phone) {
+          setError("phone", "Please enter your phone number.");
+          valid = false;
+        } else if (!isPhone(phone)) {
+          setError("phone", "Please enter a valid phone number (7-15 digits).");
+          valid = false;
+        } else {
+          setError("phone", "");
+        }
+
+        // --- Password (min 6 characters for demo) ---
+        if (!password) {
+          setError("password", "Please create a password.");
+          valid = false;
+        } else if (password.length < 6) {
+          setError("password", "Password must be at least 6 characters.");
+          valid = false;
+        } else {
+          setError("password", "");
+        }
+
+        // --- Confirm password must match ---
+        if (!confirmPassword) {
+          setError("confirmPassword", "Please confirm your password.");
+          valid = false;
+        } else if (confirmPassword !== password) {
+          setError("confirmPassword", "Passwords do not match.");
+          valid = false;
+        } else {
+          setError("confirmPassword", "");
+        }
+
+        // --- Terms checkbox must be checked ---
+        if (!terms) {
+          setError("terms", "You must accept the Terms and Conditions.");
+          valid = false;
+        } else {
+          setError("terms", "");
+        }
+
+        if (!valid) {
+          showToast("Please fix the highlighted fields.");
+          return;
+        }
+
+        // Save the demo account in localStorage (NOT secure — demo only).
+        setAccount({ fullName, email, phone, password });
+
+        // Create a demo OTP code and remember that we are in the "register" flow.
+        const otp = generateOtp();
+        localStorage.setItem(STORAGE_KEYS.pendingOtp, otp);
+        localStorage.setItem(STORAGE_KEYS.pendingFlow, "register");
+
+        showToast("Account created! Redirecting to OTP verification…");
+
+        // Go to the OTP page after a short delay so the toast is visible.
+        setTimeout(() => {
+          window.location.href = "/otp.html";
+        }, 900);
+      });
+    </script>
+  </body>
+</html>
